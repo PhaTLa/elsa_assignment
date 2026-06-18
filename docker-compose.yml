@@ -1,0 +1,102 @@
+version: '3.9'
+
+services:
+  toolbox:
+    build:
+      context: .
+      dockerfile: toolbox.Dockerfile
+    image: devops-toolbox:latest
+    container_name: elsa-toolbox
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+    working_dir: /scripts
+
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+    # Volumes (bind-mount local directories)
+    volumes:
+      # Project directories
+      - ./scripts:/scripts:rw
+      - ./helm:/helm:rw
+      - ./k6:/k6:rw
+      - ./terraform:/terraform:rw
+      - ./grafana:/grafana:rw
+      - ./troubleshoot:/troubleshoot:rw
+
+      # Kubeconfig (read-only for security)
+      - ~/.kube/config:/root/.kube/config:ro
+
+      # Docker socket (for building/pushing images)
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+      # Helm cache (ephemeral, performance optimization)
+      - helm-cache:/root/.cache/helm
+
+      # k6 results (persistent for analysis)
+      - ./k6-results:/tmp/k6-results:rw
+
+    # Environment variables
+    environment:
+      KUBECONFIG: /root/.kube/config
+      DOCKER_HOST: unix:///var/run/docker.sock
+      HELM_CACHE_HOME: /root/.cache/helm
+      HOME: /root
+      SHELL: /bin/bash
+      # Additional debugging
+      KUBECTL_INSECURE_SKIP_TLS_VERIFY: "false"
+
+    # Network
+    networks:
+      - devops-net
+
+    # Port mappings (to access services on KinD cluster)
+    ports:
+      # Ingress (Part 2)
+      - "8081:8080"
+
+      # Prometheus (Part 6)
+      - "9090:9090"
+
+      # Grafana (Part 6)
+      - "3000:3000"
+
+      # Optional: Loki for logging
+      - "3100:3100"
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Entrypoint
+    entrypoint: /bin/bash
+
+    # Default command (interactive shell)
+    command:
+      - -c
+      - |
+        echo "=========================================="
+        echo "DevOps Toolbox Ready"
+        echo "Run: bash /scripts/run-all.sh"
+        echo "=========================================="
+        /bin/bash
+
+# Custom network for communication
+networks:
+  devops-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-devops
+
+# Named volume for Helm cache
+volumes:
+  helm-cache:
+    driver: local

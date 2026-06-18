@@ -1,0 +1,198 @@
+# ═══════════════════════════════════════════════════════════════════════
+# ELSA DevOps Assignment — Git Ignore Configuration
+# Prevents secrets, build artifacts, and local-only files from being committed
+# ═══════════════════════════════════════════════════════════════════════
+
+# SECRETS & CREDENTIALS (CRITICAL)
+# ───────────────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+*.key
+*.pem
+id_rsa
+id_rsa.pub
+*.gpg
+credentials.json
+~/.kube/config
+kubeconfig
+kubeconfig-*
+
+# CONTAINER & DOCKER
+# ───────────────────────────────────────────────────────────────────────
+*.tar
+*.tar.gz
+.dockerignore
+docker-compose.override.yml
+
+# BUILD ARTIFACTS & CACHES
+# ───────────────────────────────────────────────────────────────────────
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+*.prof
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Helm
+Chart.lock
+*.tar
+charts/*/Chart.lock
+
+# Binary/Executable
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE & EDITOR
+# ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.editorconfig
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+*.iml
+
+# OS FILES
+# ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.directory
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# LOG FILES
+# ───────────────────────────────────────────────────────────────────────
+*.log
+*.log.*
+logs/
+*.out
+
+# TEMPORARY FILES
+# ───────────────────────────────────────────────────────────────────────
+*.tmp
+*.temp
+tmp/
+temp/
+*.bak
+*.backup
+*.orig
+
+# KUBERNETES & CLUSTER
+# ───────────────────────────────────────────────────────────────────────
+kubeconfig
+kubeconfig-*
+*.kubeconfig
+kind-config.yaml.bak
+kind-*.yaml
+
+# LOCAL DEVELOPMENT
+# ───────────────────────────────────────────────────────────────────────
+.localenv
+local.env
+local-values.yaml
+kind-cluster-config-local.yaml
+
+# K6 & LOAD TEST RESULTS
+# ───────────────────────────────────────────────────────────────────────
+k6-results/
+*.json.results
+load-test-*.json
+
+# GRAFANA & MONITORING
+# ───────────────────────────────────────────────────────────────────────
+grafana/provisioning/dashboards/local-*
+prometheus-data/
+grafana-storage/
+
+# CI/CD LOCAL CACHES
+# ───────────────────────────────────────────────────────────────────────
+.github/workflows/*.local.yml
+ci/local-*.sh
+
+# HELM-SPECIFIC
+# ───────────────────────────────────────────────────────────────────────
+helm/*/values-local.yaml
+helm/*/Chart.lock
+
+# APPLICATION-SPECIFIC
+# ───────────────────────────────────────────────────────────────────────
+app/src/__pycache__/
+app/src/*.egg-info/
+app/dist/
+app/build/
+
+# MISC LARGE FILES & ARTIFACTS
+# ───────────────────────────────────────────────────────────────────────
+*.zip
+*.rar
+*.7z
+*.iso
+*.dmg
+
+# UNWANTED DIRECTORIES
+# ───────────────────────────────────────────────────────────────────────
+/venv/
+/env/
+/.venv/
+node_modules/
+vendor/
+
+# SYSTEM GENERATED
+# ───────────────────────────────────────────────────────────────────────
+.AppleDouble
+.LSOverride
+._*
+
+# ALLOW SPECIFIC FILES (exceptions to ignore rules)
+# ───────────────────────────────────────────────────────────────────────
+# These files SHOULD be committed
+!.github/workflows/*.yml
+!.gitignore
+!README.md
+!Dockerfile
+!docker-compose.yml
+!kind-config.yaml
+!calico-custom-resources.yaml
