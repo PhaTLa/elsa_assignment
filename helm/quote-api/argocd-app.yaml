@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quote-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/PhaTLa/elsa_assignment.git
+    path: helm/quote-api
+    targetRevision: HEAD
+    helm:
+      releaseName: quote-api
+      parameters:
+        - name: image.tag
+          value: latest
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

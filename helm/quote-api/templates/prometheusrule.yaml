@@ -1,0 +1,36 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "quote-api.fullname" . }}-alerts
+  labels:
+    {{- include "quote-api.labels" . | nindent 4 }}
+spec:
+  groups:
+  - name: quote-api
+    interval: 30s
+    rules:
+    - alert: QuoteAPIHighErrorRate
+      expr: |
+        (
+          sum(rate(quote_api_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(quote_api_requests_total[5m]))
+        ) > 0.05
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "quote-api error rate high"
+        description: "Error rate exceeded 5% over the last 2 minutes"
+
+    - alert: QuoteAPIHighLatency
+      expr: |
+        histogram_quantile(0.95, rate(quote_api_request_duration_seconds_bucket[5m])) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "quote-api p95 latency high"
+        description: "p95 latency exceeded 500ms over 5 minutes"
+{{- end }}

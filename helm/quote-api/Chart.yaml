@@ -1,0 +1,6 @@
+apiVersion: v2
+name: quote-api
+description: Quote API service with spot/on-demand placement
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
