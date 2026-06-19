@@ -40,7 +40,7 @@ bash scripts/run-all.sh
 
 ```bash
 # Test API
-curl http://localhost:8080/api/quote
+curl http://localhost:8000/api/quote
 
 # Verify all checks
 bash troubleshoot/verify.sh

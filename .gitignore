@@ -18,6 +18,7 @@ credentials.json
 ~/.kube/config
 kubeconfig
 kubeconfig-*
+.kube/config
 
 # CONTAINER & DOCKER
 # ───────────────────────────────────────────────────────────────────────

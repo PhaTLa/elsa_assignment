@@ -55,6 +55,10 @@ services:
       # Additional debugging
       KUBECTL_INSECURE_SKIP_TLS_VERIFY: "false"
 
+    # DNS configuration to resolve K8s services
+    dns:
+      - 10.96.0.10  # CoreDNS service ClusterIP (standard K8s DNS)
+
     # Network - connect to both devops-net and kind network to reach KinD cluster
     networks:
       - devops-net

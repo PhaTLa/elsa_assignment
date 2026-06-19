@@ -47,18 +47,3 @@ echo "╔═══════════════════════�
 echo "║ ✓ All phases complete!                                    ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 
-echo ""
-echo "📋 Verify everything is working:"
-echo "   $ curl http://localhost:8080/api/quote"
-echo "   $ bash troubleshoot/verify.sh"
-
-echo ""
-echo "🔍 View cluster state:"
-echo "   $ kubectl get all -n troubleshoot"
-echo "   $ kubectl get all -n default"
-
-echo ""
-echo "🎯 Next steps:"
-echo "   • View ArgoCD UI: http://localhost:8888 (admin / 6FjraTi5ll6TWtx2)"
-echo "   • Check app logs: kubectl logs -n default -l app=quote-api --tail=20"
-echo "   • Run Part 6 (load testing): bash scripts/50-load-test-setup.sh && bash scripts/60-loadtest.sh"

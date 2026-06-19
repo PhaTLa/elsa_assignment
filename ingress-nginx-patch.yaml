@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  template:
+    spec:
+      nodeSelector: {}  # Clear any existing selectors
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            # Prefer spot nodes
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: acme.io/capacity
+                    operator: In
+                    values:
+                      - spot
+            # Otherwise accept on-demand
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: acme.io/capacity
+                    operator: In
+                    values:
+                      - on-demand
+      tolerations:
+        # Tolerate GPU taint in case it lands there
+        - key: nvidia.com/gpu
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+        # Tolerate spot disruption (if any)
+        - key: spotInstance
+          operator: Equal
+          value: "true"
+          effect: NoSchedule

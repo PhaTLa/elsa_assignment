@@ -44,57 +44,6 @@ error() {
   echo "[ERROR] $*" >&2
   exit 1
 }
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 1: Create KinD Cluster (idempotent)
-# ─────────────────────────────────────────────────────────────────────────────
-bootstrap_cluster() {
-  log_step "Step 1: Create KinD Cluster"
-
-  if kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"; then
-    log "✓ Cluster '${CLUSTER_NAME}' already exists, skipping creation"
-    return 0
-  fi
-
-  if [ ! -f "${KIND_CONFIG}" ]; then
-    error "KinD config not found: ${KIND_CONFIG}"
-  fi
-
-  log "Creating KinD cluster '${CLUSTER_NAME}' with config: ${KIND_CONFIG}"
-  kind create cluster --name "${CLUSTER_NAME}" --config "${KIND_CONFIG}"
-  log "✓ KinD cluster created"
-
-  # Wait for control plane to be ready
-  log "Waiting for control plane to be ready..."
-  kubectl wait --for=condition=Ready \
-    node -l node-role.kubernetes.io/control-plane \
-    --timeout=300s >/dev/null 2>&1 || true
-
-  log "✓ Control plane ready"
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 2: Prepare Nodes (labels/taints)
-# ─────────────────────────────────────────────────────────────────────────────
-prepare_nodes() {
-  log_step "Step 2: Prepare Cluster Nodes (labels & taints)"
-
-  if [ ! -f "${PREPARE_SCRIPT}" ]; then
-    error "Prepare script not found: ${PREPARE_SCRIPT}"
-  fi
-
-  # Check if nodes already labeled (idempotence)
-  SPOT_COUNT=$(kubectl get nodes -L acme.io/capacity --no-headers 2>/dev/null | grep -c "spot" || true)
-  if [ "$SPOT_COUNT" -ge 2 ]; then
-    log "✓ Nodes already prepared (found $SPOT_COUNT spot nodes), skipping"
-    return 0
-  fi
-
-  log "Running node preparation script..."
-  bash "${PREPARE_SCRIPT}"
-  log "✓ Nodes prepared"
-}
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Step 3: Install Calico CNI (idempotent)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -254,8 +203,6 @@ main() {
   log "╚════════════════════════════════════════════════════════════════╝"
   log ""
 
-  bootstrap_cluster
-  prepare_nodes
   install_calico
   setup_kubeconfig
   start_toolbox
