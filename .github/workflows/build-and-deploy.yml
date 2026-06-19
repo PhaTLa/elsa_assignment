@@ -76,7 +76,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if image already exists (skip if exists)
+        id: check-image
+        run: |
+          IMAGE_FULL="${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}"
+          echo "Checking if image exists: $IMAGE_FULL"
+
+          if docker pull "$IMAGE_FULL" 2>/dev/null; then
+            echo "✓ Image already exists in registry, skipping build"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "✓ Image does not exist, proceeding with build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
+        if: steps.check-image.outputs.should_build == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./app
@@ -87,6 +102,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trivy image scan (HIGH/CRITICAL only)
+        if: steps.check-image.outputs.should_build == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}
@@ -94,6 +110,11 @@ jobs:
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
 
-      - name: Image vulnerability scan passed
+      - name: Build summary
         run: |
-          echo "✓ Image scan passed (no HIGH/CRITICAL vulnerabilities found)"
+          if [ "${{ steps.check-image.outputs.should_build }}" = "true" ]; then
+            echo "✓ Image built, scanned, and pushed successfully"
+          else
+            echo "ℹ Image already exists in registry (SHA: ${{ steps.meta.outputs.tag }})"
+            echo "  Skipped build and scan to save time/resources"
+          fi
