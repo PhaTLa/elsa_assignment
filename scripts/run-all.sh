@@ -13,16 +13,16 @@ echo "╚═══════════════════════�
 # Check prerequisites
 command -v docker >/dev/null || { echo "ERROR: docker not found"; exit 1; }
 command -v git >/dev/null || { echo "ERROR: git not found"; exit 1; }
+command -v kubectl >/dev/null || { echo "ERROR: kubectl not found"; exit 1; }
 
 echo ""
 echo "=== Phase 0: Cluster Bootstrap ==="
-if docker compose ps 2>/dev/null | grep -q "elsa-toolbox"; then
-  echo "Cluster already running. Skipping docker compose up."
-else
-  echo "Starting cluster..."
-  docker compose up -d
-  sleep 30
-fi
+echo "Running bootstrap script (KinD cluster, Calico, kubeconfig, toolbox)..."
+bash scripts/00-bootstrap.sh
+
+echo ""
+echo "Waiting for cluster to stabilize..."
+sleep 5
 kubectl get nodes
 
 echo ""
