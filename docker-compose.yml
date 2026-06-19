@@ -33,8 +33,8 @@ services:
       - ./grafana:/grafana:rw
       - ./troubleshoot:/troubleshoot:rw
 
-      # Kubeconfig (read-only for security)
-      - ~/.kube/config:/root/.kube/config:ro
+      # Kubeconfig (project-local, fixed to use docker network hostname)
+      - ./.kube/config:/root/.kube/config:ro
 
       # Docker socket (for building/pushing images)
       - /var/run/docker.sock:/var/run/docker.sock:rw
@@ -55,9 +55,10 @@ services:
       # Additional debugging
       KUBECTL_INSECURE_SKIP_TLS_VERIFY: "false"
 
-    # Network
+    # Network - connect to both devops-net and kind network to reach KinD cluster
     networks:
       - devops-net
+      - kind
 
     # Port mappings (to access services on KinD cluster)
     ports:
@@ -95,6 +96,8 @@ networks:
     driver: bridge
     driver_opts:
       com.docker.network.bridge.name: br-devops
+  kind:
+    external: true  # KinD network already exists; toolbox connects to it
 
 # Named volume for Helm cache
 volumes:
