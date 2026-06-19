@@ -1,6 +1,6 @@
 # Multi-stage build: Quote API
 # Stage 1: Builder
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 COPY src/requirements.txt .
@@ -9,13 +9,13 @@ COPY src/requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime (minimal)
-FROM python:3.12-slim-bookworm
+FROM python:3.12-alpine
 
 # Create non-root user
-RUN useradd -m -u 1000 app
+RUN adduser -D -u 1000 app
 
-# Install curl for K8s probes (minimal)
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+# Install curl for K8s probes (minimal, Alpine only)
+RUN apk add --no-cache curl
 
 # Copy dependencies from builder
 COPY --from=builder /root/.local /home/app/.local
