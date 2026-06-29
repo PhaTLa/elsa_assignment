@@ -11,26 +11,36 @@ spec:
     interval: 30s
     rules:
     - alert: QuoteAPIHighErrorRate
+      # Old calculation that stripped labels:
+      # expr: |
+      #   (
+      #     sum(rate(quote_api_requests_total{status=~"5.."}[5m]))
+      #     /
+      #     sum(rate(quote_api_requests_total[5m]))
+      #   ) > 0.05
       expr: |
         (
-          sum(rate(quote_api_requests_total{status=~"5.."}[5m]))
+          sum by (pod, namespace) (rate(quote_api_requests_total{status=~"5.."}[5m]))
           /
-          sum(rate(quote_api_requests_total[5m]))
+          sum by (pod, namespace) (rate(quote_api_requests_total[5m]))
         ) > 0.05
       for: 2m
       labels:
         severity: warning
       annotations:
         summary: "quote-api error rate high"
-        description: "Error rate exceeded 5% over the last 2 minutes"
+        description: "Error rate exceeded 5% over the last 2 minutes on {{ $labels.pod }}"
 
     - alert: QuoteAPIHighLatency
+      # Old calculation that ran on raw buckets without aggregation:
+      # expr: |
+      #   histogram_quantile(0.95, rate(quote_api_request_duration_seconds_bucket[5m])) > 0.5
       expr: |
-        histogram_quantile(0.95, rate(quote_api_request_duration_seconds_bucket[5m])) > 0.5
+        histogram_quantile(0.95, sum by (le, pod, namespace) (rate(quote_api_request_duration_seconds_bucket[5m]))) > 0.5
       for: 5m
       labels:
         severity: warning
       annotations:
         summary: "quote-api p95 latency high"
-        description: "p95 latency exceeded 500ms over 5 minutes"
+        description: "p95 latency exceeded 500ms over 5 minutes on {{ $labels.pod }}"
 {{- end }}
