@@ -101,20 +101,43 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Trivy image scan (HIGH/CRITICAL only)
+      - name: Install Cosign
+        if: steps.check-image.outputs.should_build == 'true'
+        uses: sigstore/cosign-installer@v3.5.0
+
+      # Old Trivy scan that printed a text table to logs:
+      # - name: Trivy image scan (HIGH/CRITICAL only)
+      #   if: steps.check-image.outputs.should_build == 'true'
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}
+      #     format: 'table'
+      #     severity: 'HIGH,CRITICAL'
+      #     exit-code: '1'
+
+      - name: Trivy image scan (Generate cosign-vuln report)
         if: steps.check-image.outputs.should_build == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}
-          format: 'table'
+          format: 'cosign-vuln'
+          output: 'vuln.json'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
+
+      - name: Attest vulnerability report with Cosign
+        if: steps.check-image.outputs.should_build == 'true'
+        run: |
+          cosign attest --yes \
+            --predicate vuln.json \
+            --type vuln \
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}
 
       - name: Build summary
         run: |
           if [ "${{ steps.check-image.outputs.should_build }}" = "true" ]; then
-            echo "✓ Image built, scanned, and pushed successfully"
+            echo "✓ Image built, scanned, and attested successfully"
           else
             echo "ℹ Image already exists in registry (SHA: ${{ steps.meta.outputs.tag }})"
-            echo "  Skipped build and scan to save time/resources"
+            echo "  Skipped build, scan, and attestation to save time/resources"
           fi
