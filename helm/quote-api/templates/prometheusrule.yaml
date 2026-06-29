@@ -29,7 +29,7 @@ spec:
         severity: warning
       annotations:
         summary: "quote-api error rate high"
-        description: "Error rate exceeded 5% over the last 2 minutes on {{ $labels.pod }}"
+        description: "Error rate exceeded 5% over the last 2 minutes on {{ `{{ $labels.pod }}` }}"
 
     - alert: QuoteAPIHighLatency
       # Old calculation that ran on raw buckets without aggregation:
@@ -42,5 +42,5 @@ spec:
         severity: warning
       annotations:
         summary: "quote-api p95 latency high"
-        description: "p95 latency exceeded 500ms over 5 minutes on {{ $labels.pod }}"
+        description: "p95 latency exceeded 500ms over 5 minutes on {{ `{{ $labels.pod }}` }}"
 {{- end }}
