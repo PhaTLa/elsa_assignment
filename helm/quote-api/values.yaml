@@ -61,4 +61,4 @@ nodeAffinity:
     weight: 50
 
 monitoring:
-  enabled: false
+  enabled: true
