@@ -1,9 +1,9 @@
-# DevOps Assignment: ELSA (Kubernetes, GitOps, Troubleshooting, CI/CD)
+# DevOps Assignment: alex (Kubernetes, GitOps, Troubleshooting, CI/CD)
 
 A self-contained, reproducible DevOps workflow demonstrating containerization, GitOps deployment, troubleshooting, CI/CD pipelines, and load testing on a local Kubernetes cluster.
 
 **Status:** ✅ Parts 1-3 Complete | Parts 4, 6, 7 Ready  
-**Repo:** https://github.com/PhaTLa/elsa_assignment  
+**Repo:** https://github.com/PhaTLa/alex_assignment  
 **Image:** ghcr.io/phatla/quote-api
 
 ---
@@ -19,8 +19,8 @@ A self-contained, reproducible DevOps workflow demonstrating containerization, G
 
 ```bash
 # Clone repo
-git clone https://github.com/PhaTLa/elsa_assignment.git
-cd elsa_assignment
+git clone https://github.com/PhaTLa/alex_assignment.git
+cd alex_assignment
 
 # Run all phases: build → deploy → test → troubleshoot
 bash scripts/run-all.sh
@@ -67,10 +67,10 @@ graph TB
         end
         
         subgraph "Worker Nodes"
-            WS1["elsa-worker<br/>spot"]
-            WS2["elsa-worker2<br/>spot"]
-            WOD["elsa-worker3<br/>on-demand"]
-            WGPU["elsa-worker4<br/>GPU<br/>taint: nvidia.com/gpu"]
+            WS1["alex-worker<br/>spot"]
+            WS2["alex-worker2<br/>spot"]
+            WOD["alex-worker3<br/>on-demand"]
+            WGPU["alex-worker4<br/>GPU<br/>taint: nvidia.com/gpu"]
         end
         
         subgraph "System Components"
@@ -93,7 +93,7 @@ graph TB
     end
 
     subgraph "GitHub Registry"
-        REPO["GitHub Repo<br/>elsa_assignment"]
+        REPO["GitHub Repo<br/>alex_assignment"]
         GHCR["GHCR Image<br/>ghcr.io/phatla/quote-api"]
     end
 
@@ -328,7 +328,7 @@ graph TB
 ## File Structure
 
 ```
-elsa/
+alex/
 ├── README.md                      # This file
 ├── TROUBLESHOOTING.md             # Part 3 diagnostics
 ├── AI-USAGE.md                    # AI tool transparency

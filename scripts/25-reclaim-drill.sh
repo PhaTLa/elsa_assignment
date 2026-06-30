@@ -10,7 +10,9 @@ echo "╚═══════════════════════�
 SERVICE_NAME="quote-api"
 SERVICE_NAMESPACE="default"
 SERVICE_PORT="8000"
-SERVICE_URL="http://${SERVICE_NAME}.${SERVICE_NAMESPACE}.svc.cluster.local:${SERVICE_PORT}/api/quote"
+# Old static service URL:
+# SERVICE_URL="http://${SERVICE_NAME}.${SERVICE_NAMESPACE}.svc.cluster.local:${SERVICE_PORT}/api/quote"
+SERVICE_URL="" # Will be dynamically populated via the LoadBalancer IP
 DRILL_TIMEOUT=120
 CURL_INTERVAL=2
 
@@ -59,6 +61,38 @@ if [ "${POD_COUNT}" -lt 2 ]; then
   exit 1
 fi
 echo "✓ Found ${POD_COUNT} running pods"
+
+echo "3.5. Detecting Quote API LoadBalancer IP..."
+# Validate service is of type LoadBalancer
+SVC_TYPE=$(kubectl get svc "${SERVICE_NAME}" -n "${SERVICE_NAMESPACE}" -o jsonpath='{.spec.type}' 2>/dev/null || echo "None")
+if [ "${SVC_TYPE}" != "LoadBalancer" ]; then
+  echo "✗ Service ${SERVICE_NAME} is not of type LoadBalancer (found type: ${SVC_TYPE})"
+  exit 1
+fi
+
+# Wait and retrieve the external IP/hostname (wait up to 30 seconds)
+LB_IP=""
+echo "Waiting for LoadBalancer external IP..."
+for attempt in {1..15}; do
+  LB_IP=$(kubectl get svc "${SERVICE_NAME}" -n "${SERVICE_NAMESPACE}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+  if [ -z "${LB_IP}" ]; then
+    # Fallback to check if external hostname is set instead of IP (e.g. localhost or domain)
+    LB_IP=$(kubectl get svc "${SERVICE_NAME}" -n "${SERVICE_NAMESPACE}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+  fi
+  if [ -n "${LB_IP}" ]; then
+    break
+  fi
+  sleep 2
+done
+
+if [ -z "${LB_IP}" ]; then
+  echo "✗ Timeout: LoadBalancer external IP is still pending. Ensure cloud-provider-kind is running."
+  exit 1
+fi
+
+echo "✓ LoadBalancer IP detected: ${LB_IP}"
+SERVICE_URL="http://${LB_IP}:${SERVICE_PORT}/api/quote"
+echo "  Target URL set to: ${SERVICE_URL}"
 
 echo "4. Checking Pod Disruption Budget..."
 if ! kubectl get pdb -n "${SERVICE_NAMESPACE}" | grep -q "${SERVICE_NAME}"; then

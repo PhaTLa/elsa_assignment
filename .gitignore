@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════
-# ELSA DevOps Assignment — Git Ignore Configuration
+# alex DevOps Assignment — Git Ignore Configuration
 # Prevents secrets, build artifacts, and local-only files from being committed
 # ═══════════════════════════════════════════════════════════════════════
 

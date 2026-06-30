@@ -144,7 +144,7 @@ Warning  FailedScheduling  0/5 nodes are available: 2 node(s) had untolerated ta
 
 **How I Caught It:**
 ```bash
-$ kubectl get node elsa-worker4 --show-labels | grep node-type
+$ kubectl get node alex-worker4 --show-labels | grep node-type
 # Output: acme.io/node-type=gpu
 
 # The actual label key had a namespace prefix!
@@ -168,7 +168,7 @@ tolerations:
 ```bash
 $ kubectl apply -f fixed-app.yaml
 $ kubectl get pods -n troubleshoot -l app=ai-inference -o wide
-ai-inference-xxx   1/1     Running   elsa-worker4   # ✅ Now scheduled on GPU node
+ai-inference-xxx   1/1     Running   alex-worker4   # ✅ Now scheduled on GPU node
 ```
 
 **Why It Happened:**

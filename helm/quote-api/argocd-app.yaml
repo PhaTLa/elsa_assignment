@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/PhaTLa/elsa_assignment.git
+    repoURL: https://github.com/PhaTLa/alex_assignment.git
     path: helm/quote-api
     targetRevision: HEAD
     helm:

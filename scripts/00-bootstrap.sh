@@ -1,11 +1,9 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# ELSA DevOps Assignment — Bootstrap Script
+# alex DevOps Assignment — Bootstrap Script
 # ═══════════════════════════════════════════════════════════════════════════════
 # Purpose: One-shot setup of entire local DevOps environment
 # Steps:
-#   1. Create KinD cluster with kind-config.yaml
-#   2. Prepare nodes with labels and taints (troubleshoot/prepare.sh)
 #   3. Install Calico CNI with custom resources
 #   4. Copy and rewrite kubeconfig for toolbox container
 #   5. Start toolbox container (docker-compose up)
@@ -19,7 +17,7 @@ set -eu
 # Configuration
 # ─────────────────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CLUSTER_NAME="elsa"
+CLUSTER_NAME="alex"
 KUBECONFIG_DIR="${SCRIPT_DIR}/.kube"
 KUBECONFIG_FILE="${KUBECONFIG_DIR}/config"
 KIND_CONFIG="${SCRIPT_DIR}/kind-config.yaml"
@@ -55,10 +53,18 @@ install_calico() {
   fi
 
   # Check if Calico operator already installed
-  if kubectl get ns tigera-operator >/dev/null 2>&1; then
-    log "✓ Calico already appears installed (tigera-operator namespace exists)"
-
-    # Verify Installation CRD exists
+  # Old check that only verified if namespace existed (which could be true even if installation CRDs failed to apply):
+  # if kubectl get ns tigera-operator >/dev/null 2>&1; then
+  #   log "✓ Calico already appears installed (tigera-operator namespace exists)"
+  #
+  #   # Verify Installation CRD exists
+  #   if kubectl get installation -n tigera-operator default >/dev/null 2>&1; then
+  #     log "✓ Calico Installation resource exists, skipping install"
+  #     return 0
+  #   fi
+  # fi
+  if kubectl get ns tigera-operator >/dev/null 2>&1 && kubectl get crd installations.operator.tigera.io >/dev/null 2>&1; then
+    log "✓ Calico already appears installed (tigera-operator namespace and installation CRD exist)"
     if kubectl get installation -n tigera-operator default >/dev/null 2>&1; then
       log "✓ Calico Installation resource exists, skipping install"
       return 0
@@ -72,7 +78,11 @@ install_calico() {
 
   # Apply operator if not already present
   if ! kubectl get deployment -n tigera-operator tigera-operator >/dev/null 2>&1; then
-    kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.1/manifests/tigera-operator.yaml
+    # Old apply call that failed due to 262144 bytes annotation limit:
+    # kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.1/manifests/tigera-operator.yaml
+    # Old create call that wasn't fully idempotent:
+    # kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.1/manifests/tigera-operator.yaml
+    kubectl apply --server-side -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.1/manifests/tigera-operator.yaml
     log "Waiting for Calico operator to be ready..."
     kubectl wait --for=condition=Available --timeout=300s \
       deployment/tigera-operator -n tigera-operator >/dev/null 2>&1 || true
@@ -122,9 +132,9 @@ setup_kubeconfig() {
   log "Copying from: $HOST_KUBECONFIG"
 
   # Copy and rewrite kubeconfig for container network
-  # Replace API server address: 127.0.0.1:XXXX -> elsa-control-plane:6443
+  # Replace API server address: 127.0.0.1:XXXX -> alex-control-plane:6443
   cat "$HOST_KUBECONFIG" | \
-    sed "s|server: https://127\.0\.0\.1:[0-9]*$|server: https://elsa-control-plane:6443|g" \
+    sed "s|server: https://127\.0\.0\.1:[0-9]*$|server: https://alex-control-plane:6443|g" \
     > "${KUBECONFIG_FILE}"
 
   # Verify the file was created
@@ -133,7 +143,7 @@ setup_kubeconfig() {
   fi
 
   log "✓ Kubeconfig copied and rewritten"
-  log "  Server address: elsa-control-plane:6443 (for container network)"
+  log "  Server address: alex-control-plane:6443 (for container network)"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -145,7 +155,7 @@ start_toolbox() {
   cd "${SCRIPT_DIR}"
 
   # Check if container is already running
-  if docker ps --filter "name=elsa-toolbox" --format "{{.Names}}" | grep -q elsa-toolbox; then
+  if docker ps --filter "name=alex-toolbox" --format "{{.Names}}" | grep -q alex-toolbox; then
     log "✓ Toolbox container already running"
     return 0
   fi
@@ -157,7 +167,7 @@ start_toolbox() {
   sleep 2
 
   # Verify container is running
-  if docker ps --filter "name=elsa-toolbox" --format "{{.Names}}" | grep -q elsa-toolbox; then
+  if docker ps --filter "name=alex-toolbox" --format "{{.Names}}" | grep -q alex-toolbox; then
     log "✓ Toolbox container started"
   else
     error "Toolbox container failed to start"
@@ -198,7 +208,7 @@ verify_bootstrap() {
 # ─────────────────────────────────────────────────────────────────────────────
 main() {
   log "╔════════════════════════════════════════════════════════════════╗"
-  log "║  ELSA DevOps Assignment — Bootstrap                           ║"
+  log "║  alex DevOps Assignment — Bootstrap                           ║"
   log "║  Starting at: $(date +'%Y-%m-%d %H:%M:%S')                              ║"
   log "╚════════════════════════════════════════════════════════════════╝"
   log ""

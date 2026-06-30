@@ -40,7 +40,7 @@ metadata:
   namespace: argocd
 spec:
   sourceRepos:
-  - 'https://github.com/PhaTLa/elsa_assignment.git'
+  - 'https://github.com/PhaTLa/alex_assignment.git'
   destinations:
   - namespace: '*'
     server: '*'
@@ -63,7 +63,7 @@ metadata:
 spec:
   project: quote-api
   source:
-    repoURL: https://github.com/PhaTLa/elsa_assignment.git
+    repoURL: https://github.com/PhaTLa/alex_assignment.git
     path: helm/quote-api
     targetRevision: HEAD
     helm:
@@ -87,17 +87,37 @@ EOF
 echo "✓ ArgoCD Application created/updated"
 
 # Wait for ArgoCD sync
-echo "Waiting for ArgoCD sync (max 5 minutes)..."
-SYNC_RESULT=$(retry_cmd "kubectl wait --for=condition=Synced application/quote-api -n argocd --timeout=300s")
-if [ $? -eq 0 ]; then
-  echo "✓ ArgoCD sync completed"
-else
+echo "Waiting for ArgoCD sync (max 2 minutes)..."
+# Old wait logic that hung because kubectl wait doesn't support custom ArgoCD status values natively:
+# SYNC_RESULT=$(retry_cmd "kubectl wait --for=condition=Synced application/quote-api -n argocd --timeout=120s")
+# if [ $? -eq 0 ]; then
+#   echo "✓ ArgoCD sync completed"
+# else
+#   echo "✗ ArgoCD sync timeout - may be cloning repo, checking status..."
+# fi
+
+SUCCESS=0
+for i in {1..24}; do
+  SYNC_STATUS=$(kubectl get application quote-api -n argocd -o jsonpath='{.status.sync.status}' 2>/dev/null || echo "Unknown")
+  HEALTH_STATUS=$(kubectl get application quote-api -n argocd -o jsonpath='{.status.health.status}' 2>/dev/null || echo "Unknown")
+  
+  if [ "${SYNC_STATUS}" = "Synced" ] && [ "${HEALTH_STATUS}" = "Healthy" ]; then
+    echo "✓ ArgoCD sync completed and application is healthy"
+    SUCCESS=1
+    break
+  fi
+  
+  echo "  Status: Sync=${SYNC_STATUS}, Health=${HEALTH_STATUS}. Waiting..."
+  sleep 5
+done
+
+if [ $SUCCESS -ne 1 ]; then
   echo "✗ ArgoCD sync timeout - may be cloning repo, checking status..."
 fi
 
 # Wait for deployment to be ready (argocd creates the deployment)
 echo "Waiting for Quote API deployment to be ready (max 5 minutes)..."
-retry_cmd "kubectl rollout status deployment/quote-api -n default --timeout=300s"
+retry_cmd "kubectl rollout status deployment/quote-api -n default --timeout=120s"
 
 # Verify deployment
 echo ""

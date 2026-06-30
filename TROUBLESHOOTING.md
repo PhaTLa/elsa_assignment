@@ -393,15 +393,15 @@ Tolerations:
 
 **Step 2:** Check GPU node taints
 ```bash
-$ kubectl describe node elsa-worker4 | grep Taints
+$ kubectl describe node alex-worker4 | grep Taints
 Taints: nvidia.com/gpu=true:NoSchedule
 ```
 
 **Step 3:** Check GPU node labels
 ```bash
-$ kubectl get node elsa-worker4 -L acme.io/node-type
+$ kubectl get node alex-worker4 -L acme.io/node-type
 NAME           STATUS   ROLES   AGE   VERSION   NODE-TYPE
-elsa-worker4   Ready    <none>  3d    v1.35.0   gpu
+alex-worker4   Ready    <none>  3d    v1.35.0   gpu
 ```
 
 **Step 4:** Check scheduler decision
@@ -445,10 +445,10 @@ After fix:
 ```bash
 $ kubectl get pods -n troubleshoot -l app=ai-inference -o wide
 NAME                           READY   STATUS    RESTARTS   AGE   IP               NODE           NOMINATED NODE   READINESS GATES
-ai-inference-f765cc8d8-cqmp7   1/1     Running   0          2m    10.244.201.129   elsa-worker4   <none>           <none>
+ai-inference-f765cc8d8-cqmp7   1/1     Running   0          2m    10.244.201.129   alex-worker4   <none>           <none>
 
-$ kubectl get node elsa-worker4 --show-labels | grep acme.io/node-type
-elsa-worker4   Ready    <none>   3d   v1.35.0   acme.io/node-type=gpu
+$ kubectl get node alex-worker4 --show-labels | grep acme.io/node-type
+alex-worker4   Ready    <none>   3d   v1.35.0   acme.io/node-type=gpu
 ```
 
 Pod now scheduled on GPU node as intended.

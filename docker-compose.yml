@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: toolbox.Dockerfile
     image: devops-toolbox:latest
-    container_name: elsa-toolbox
+    container_name: alex-toolbox
 
     deploy:
       resources:

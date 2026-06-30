@@ -35,7 +35,9 @@ fi
 
 # Add Helm repo (idempotent)
 echo "Configuring ArgoCD Helm repo..."
-helm repo add argo https://argoproj.github.io/argo-helm 2>/dev/null || true
+# Old repo add that silenced errors:
+# helm repo add argo https://argoproj.github.io/argo-helm 2>/dev/null || true
+helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update argo
 
 # Deploy/upgrade ArgoCD using helm (idempotent with --install)
@@ -45,7 +47,7 @@ retry_cmd "helm upgrade --install argocd argo/argo-cd \
   --set 'server.service.type=LoadBalancer' \
   --set 'server.insecure=true' \
   --wait \
-  --timeout=5m"
+  --timeout=2m"
 
 # Wait for API server to be ready (idempotent)
 echo "Verifying ArgoCD API server is ready..."

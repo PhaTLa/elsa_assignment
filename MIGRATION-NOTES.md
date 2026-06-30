@@ -65,7 +65,7 @@ Two jobs with dependency:
 ### 2. SonarQube Cloud Config
 **File:** `sonar-project.properties`
 ```properties
-sonar.projectKey=PhaTLa_elsa_assignment
+sonar.projectKey=PhaTLa_alex_assignment
 sonar.organization=phatla
 sonar.sources=app/src
 sonar.python.version=3.9
@@ -117,7 +117,7 @@ GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # Auto-provided
 
 **SonarQube config (in sonar-project.properties):**
 ```properties
-sonar.projectKey=PhaTLa_elsa_assignment   # Your project key
+sonar.projectKey=PhaTLa_alex_assignment   # Your project key
 sonar.organization=phatla                 # Your org key
 sonar.sources=app/src                     # Source dir
 sonar.python.version=3.9                  # Language version
@@ -131,7 +131,7 @@ sonar.python.version=3.9                  # Language version
 1. Code scanned by SonarQube (2-3 min)
 2. If quality gate passes, image built (5-10 min)
 3. Image scanned by Trivy
-4. If no HIGH/CRITICAL CVEs, pushed to GHCR: `ghcr.io/phatla/elsa_assignment:abc1234`
+4. If no HIGH/CRITICAL CVEs, pushed to GHCR: `ghcr.io/phatla/alex_assignment:abc1234`
 5. ArgoCD auto-deploys (Part 2 integration)
 
 ✅ **On re-run of same commit:**
